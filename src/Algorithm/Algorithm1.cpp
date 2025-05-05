@@ -27,6 +27,16 @@ void algorithm_init(){
     optics[3] = &opticD;
 }
 
-void move_motors(){
+void update_optic_steps(optic_select_t optic_select, uint stepsX, uint dirX, uint stepsY, uint dirY, uint stepsZ, uint dirZ){
+    optic_t* optic = optics[optic_select];
+    optic->motor_X.target_steps = stepsX;
+    optic->motor_X.direction = dirX;
+    optic->motor_X.cur_steps = 0;
+    optic->motor_Y.target_steps = stepsY;
+    optic->motor_Y.direction = dirY;
+    optic->motor_Y.cur_steps = 0;
+    optic->motor_Z.target_steps = stepsZ;
+    optic->motor_Z.direction = dirZ;
+    optic->motor_Z.cur_steps = 0;
 
 }

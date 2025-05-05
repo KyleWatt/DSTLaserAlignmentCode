@@ -8,13 +8,6 @@
 #include <cstdlib>
 #include "pico/multicore.h"
 
-// Global variables
-// static optic_t opticA;
-// static optic_t opticB;
-// static optic_t opticC;
-// static optic_t opticD;
-// static optic_t optics[] = {opticA, opticB, opticC, opticD};
-
 void optic_motors_init(optic_t* optic,optic_select_t optic_select){
     // Setup the motor struct
     switch (optic_select)

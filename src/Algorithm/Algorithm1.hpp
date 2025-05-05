@@ -12,4 +12,4 @@ void algorithm_start();
 void algorithm_stop();
 void read_USB();
 void calculate_steps();
-void move_motors();
+void update_optic_steps(optic_select_t optic_select, uint stepsX, uint dirX, uint stepsY, uint dirY, uint stepsZ, uint dirZ);
