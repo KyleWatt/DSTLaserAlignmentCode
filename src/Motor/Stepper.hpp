@@ -67,16 +67,15 @@ typedef enum {
     OPTIC_D,
 } optic_select_t;
 
-void stepper_motor_init(motor_t* motor,optic_select_t axis);
+void optic_motors_init(optic_t* optic,optic_select_t optic_select);
 
 void disable_motor(motor_t* motor);
 
 void enable_motor(motor_t* motor);
 
-void motors_move();
+void motors_move(optic_t optics[]);
 
-void set_direction();
-
+void set_direction(optic_t optics[]);
 
 
 
