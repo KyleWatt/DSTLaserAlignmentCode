@@ -8,6 +8,10 @@
 #include <cstdlib>
 #include "pico/multicore.h"
 
+#define ANGLE_STEP (M_PI / 10);
+#define STEP_SIZE 2;
+
+
 //Global variables 
 static optic_t opticA;
 static optic_t opticB;
@@ -39,4 +43,26 @@ void update_optic_steps(optic_select_t optic_select, uint stepsX, uint dirX, uin
     optic->motor_Z.direction = dirZ;
     optic->motor_Z.cur_steps = 0;
 
+}
+
+void calculate_spiral_step(optic_select_t optic_select, float radius, float angle){
+    int x_dir = 1;
+    int y_dir = 1;
+    int x_steps = (int) round(radius * cos(angle));
+    int y_steps = (int) round(radius * cos(angle));
+    if (x_steps < 0){
+        x_dir = 0;
+        x_steps = abs(x_steps);
+    }
+    if (y_steps < 0){
+        y_dir = 0;
+        y_steps = abs(y_steps);
+    }
+    update_optic_steps(optic_select, x_steps, x_dir, y_steps, y_dir, 0, 0);
+}
+
+void start_spiral(uint iterations){
+    for (uint i = 0; i < iterations; i++){
+
+    }
 }

@@ -44,8 +44,8 @@ typedef struct {
     uint pin_step;
 
     // Motion
-    uint cur_steps;
-    uint target_steps;
+    int cur_steps;
+    int target_steps;
     int8_t direction;
 
     bool moving; 
@@ -55,6 +55,9 @@ typedef struct {
     motor_t motor_X;
     motor_t motor_Y;
     motor_t motor_Z;
+    int x_location;
+    int y_location;
+    int z_location;
     uint pin_enable;
     bool moving;
 
@@ -67,7 +70,15 @@ typedef enum {
     OPTIC_D,
 } optic_select_t;
 
+typedef enum {
+    MOTOR_X,
+    MOTOR_Y,
+    MOTOR_Z,
+} motor_axis_t;
+
 void optic_motors_init(optic_t* optic,optic_select_t optic_select);
+
+void update_motor_steps(optic_t* optic, motor_axis_t motor_axis);
 
 void disable_motor(motor_t* motor);
 

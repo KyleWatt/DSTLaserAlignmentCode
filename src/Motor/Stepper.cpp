@@ -113,13 +113,13 @@ void disable_motor(optic_t* optic) {
 void set_direction(optic_t* optics[]){
     for (uint i = 0; i < 4; i++){
         optic_t* optic = optics[i];
-        if (optic->motor_X.direction != optic->motor_X.pin_dir){
+        if (optic->motor_X.direction != gpio_get(optic->motor_X.pin_dir)){
             gpio_put(optic->motor_X.pin_dir, optic->motor_X.direction);
         }
-        if (optic->motor_Y.direction != optic->motor_Y.pin_dir){
+        if (optic->motor_Y.direction != gpio_get(optic->motor_Y.pin_dir)){
             gpio_put(optic->motor_Y.pin_dir, optic->motor_Y.direction);
         }
-        if (optic->motor_Z.direction != optic->motor_Z.pin_dir){
+        if (optic->motor_Z.direction != gpio_get(optic->motor_Z.pin_dir)){
             gpio_put(optic->motor_Z.pin_dir, optic->motor_Z.direction);
         }
     }
@@ -136,35 +136,52 @@ void set_low(optic_t* optics[]){
 
 }
 
+void update_motor_steps(optic_t* optic, motor_axis_t axis_select) {
+    switch (axis_select)
+    {
+    case MOTOR_X:
+        if (optic->motor_X.cur_steps != optic->motor_X.target_steps) {
+            gpio_put(optic->motor_X.pin_step, 1);
+            optic->motor_X.cur_steps++;
+        } else {
+            optic->motor_X.moving = false;
+            optic->x_location += (optic->motor_X.direction == 0) ? -optic->motor_X.cur_steps : optic->motor_X.cur_steps;
+        } 
+        break;
+    case MOTOR_Y:
+        if (optic->motor_Y.cur_steps != optic->motor_Y.target_steps) {
+            gpio_put(optic->motor_Y.pin_step, 1);
+            optic->motor_Y.cur_steps++;
+        } else {
+            optic->motor_Y.moving = false;
+            optic->y_location += (optic->motor_Y.direction == 0) ? -optic->motor_Y.cur_steps : optic->motor_Y.cur_steps;
+        }
+        break;
+    case MOTOR_Z:
+        if (optic->motor_Z.cur_steps != optic->motor_Z.target_steps) {
+            gpio_put(optic->motor_Z.pin_step, 1);
+            optic->motor_Z.cur_steps++;
+        } else {
+            optic->motor_Z.moving = false;
+            optic->z_location += (optic->motor_Z.direction == 0) ? -optic->motor_Z.cur_steps : optic->motor_Z.cur_steps;
+        }
+        break;
+    }
+}
+
+
 void motors_move(optic_t* optics[]){
+    set_direction(optics);
     while (optics[0]->moving || optics[1]->moving || optics[2]->moving || optics[3]->moving) {
         // Set all step pins high for motors that need to move
         for (uint i = 0; i < 4; i++){
-            optic_t* optic = optics[i];
-            if (optic->motor_X.cur_steps != optic->motor_X.target_steps){
-                gpio_put(optic->motor_X.pin_step, 1);
-                optic->motor_X.cur_steps++;
-            } else {
-                optic->motor_X.moving = false;
-            }
-
-            if (optic->motor_Y.cur_steps != optic->motor_Y.target_steps){
-                gpio_put(optic->motor_Y.pin_step, 1);
-                optic->motor_Y.cur_steps++;
-            } else {
-                optic->motor_Y.moving = false;
-            }
-
-            if (optic->motor_Z.cur_steps != optic->motor_Z.target_steps){
-                gpio_put(optic->motor_Z.pin_step, 1);
-                optic->motor_Z.cur_steps++;
-            } else {
-                optic->motor_Z.moving = false;
-            }
-
-            optic->moving = (optic->motor_X.moving || optic->motor_Y.moving || optic->motor_Z.moving);
+            update_motor_steps(optics[i], MOTOR_X);
+            update_motor_steps(optics[i], MOTOR_Y);
+            update_motor_steps(optics[i], MOTOR_Z);
+            optics[i]->moving = (optics[i]->motor_X.moving || optics[i]->motor_Y.moving || optics[i]->motor_Z.moving);
         }
 
+        
         // Hold step state before resetting
         sleep_us(3); 
         set_low(optics); // Set pins low after step pulse
