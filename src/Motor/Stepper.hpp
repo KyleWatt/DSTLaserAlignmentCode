@@ -84,7 +84,7 @@ void disable_motor(motor_t* motor);
 
 void enable_motor(motor_t* motor);
 
-void motors_move(optic_t optics[]);
+void motors_move(optic_t** optics);
 
 void set_direction(optic_t optics[]);
 

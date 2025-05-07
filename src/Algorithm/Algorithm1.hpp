@@ -1,6 +1,3 @@
-#ifndef ALGORITHM_HPP
-#define ALGORITHM_HPP
-
 #include "pico/stdlib.h"
 #include "Motor\Stepper.hpp"
 #include "hardware/uart.h"

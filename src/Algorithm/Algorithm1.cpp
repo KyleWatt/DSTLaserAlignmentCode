@@ -8,8 +8,8 @@
 #include <cstdlib>
 #include "pico/multicore.h"
 
-#define ANGLE_STEP (M_PI / 10);
-#define STEP_SIZE 2;
+#define ANGLE_STEP (3.14 / 10);
+#define STEP_SIZE 1;
 
 
 //Global variables 
@@ -42,6 +42,7 @@ void update_optic_steps(optic_select_t optic_select, uint stepsX, uint dirX, uin
     optic->motor_Z.target_steps = stepsZ;
     optic->motor_Z.direction = dirZ;
     optic->motor_Z.cur_steps = 0;
+    optic->moving = true;
 
 }
 
@@ -49,7 +50,7 @@ void calculate_spiral_step(optic_select_t optic_select, float radius, float angl
     int x_dir = 1;
     int y_dir = 1;
     int x_steps = (int) round(radius * cos(angle));
-    int y_steps = (int) round(radius * cos(angle));
+    int y_steps = (int) round(radius * sin(angle));
     if (x_steps < 0){
         x_dir = 0;
         x_steps = abs(x_steps);
@@ -61,8 +62,21 @@ void calculate_spiral_step(optic_select_t optic_select, float radius, float angl
     update_optic_steps(optic_select, x_steps, x_dir, y_steps, y_dir, 0, 0);
 }
 
-void start_spiral(uint iterations){
-    for (uint i = 0; i < iterations; i++){
+float read_power(optic_select_t optic_select){
+    //not sure yet. Packet format will be 2 bytes realating to power in mW
+}
 
+void start_spiral(uint iterations){
+    float radius = 1;
+    float angle = ANGLE_STEP;
+    //read all the optics inital powers and set inital to max power 
+    for (uint i = 0; i < iterations; i++){
+        calculate_spiral_step(OPTIC_A, radius, angle);
+        calculate_spiral_step(OPTIC_B, radius, angle);
+        calculate_spiral_step(OPTIC_C, radius, angle);
+        calculate_spiral_step(OPTIC_D, radius, angle);
+        motors_move(optics);
+        //compare each optics power to its max and if its new power is greater than the max, set that to max and store x and y position.
     }
+    // Compare max power to threshold. If max power is acceptable move to that position. else move z
 }

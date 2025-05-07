@@ -170,7 +170,7 @@ void update_motor_steps(optic_t* optic, motor_axis_t axis_select) {
 }
 
 
-void motors_move(optic_t* optics[]){
+void motors_move(optic_t** optics){
     set_direction(optics);
     while (optics[0]->moving || optics[1]->moving || optics[2]->moving || optics[3]->moving) {
         // Set all step pins high for motors that need to move
