@@ -1,6 +1,4 @@
 #include "pico/stdlib.h"
-#include "FreeRTOS.h"
-#include "queue.h"
 #include "pico/multicore.h"
 
 //Motor Step and DIR PINS

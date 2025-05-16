@@ -1,8 +1,6 @@
 #include "Algorithm1.hpp"
 #include "pico/time.h"
 #include "pico/stdlib.h"
-#include "hardware/irq.h"
-#include "hardware/pwm.h"
 #include <math.h>
 #include <stdio.h>
 #include <cstdlib>
@@ -17,8 +15,8 @@ static optic_t opticA;
 static optic_t opticB;
 static optic_t opticC;
 static optic_t opticD;
-optic_t* optics[4];
-
+static optic_t* optics[4];
+ 
 
 void algorithm_init(){
     optic_motors_init(&opticA, OPTIC_A);
@@ -76,6 +74,7 @@ void start_spiral(uint iterations){
         calculate_spiral_step(OPTIC_C, radius, angle);
         calculate_spiral_step(OPTIC_D, radius, angle);
         motors_move(optics);
+        angle += ANGLE_STEP;
         //compare each optics power to its max and if its new power is greater than the max, set that to max and store x and y position.
     }
     // Compare max power to threshold. If max power is acceptable move to that position. else move z

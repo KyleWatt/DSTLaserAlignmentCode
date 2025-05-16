@@ -1,7 +1,7 @@
 #include "pico/stdlib.h"
-#include "Motor\Stepper.hpp"
+#include "pico/multicore.h"
+#include "Stepper.hpp"
 #include "hardware/uart.h"
-#include "tusb.h"  // USB communication
 
 
 void algorithm_init();

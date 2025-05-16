@@ -1,8 +1,6 @@
 #include "stepper.hpp"
 #include "pico/time.h"
 #include "pico/stdlib.h"
-#include "hardware/irq.h"
-#include "hardware/pwm.h"
 #include <math.h>
 #include <stdio.h>
 #include <cstdlib>
