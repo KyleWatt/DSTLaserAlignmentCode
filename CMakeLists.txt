@@ -28,11 +28,11 @@ add_compile_definitions(DEBUG_ENABLE)
 add_library(warnings INTERFACE)
 target_compile_options(warnings INTERFACE "-Wall" "-Wextra" "-Wno-psabi")
 
-# Add subdirectories
+# Add subdirectories for your libraries (Motor, Algorithm)
 add_subdirectory(src/Motor)
 add_subdirectory(src/Algorithm)
 
-# Add main executable (this builds in root-level build/)
+# Add main executable (builds in root-level build/)
 add_executable(pico-cpp 
     src/main.cpp
 )
@@ -44,8 +44,12 @@ target_include_directories(pico-cpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Algorithm
 )
 
-# C++ features
+# C++ standard
 target_compile_features(pico-cpp PUBLIC cxx_std_17)
+
+# Enable USB output (disable UART)
+pico_enable_stdio_usb(pico-cpp 1)
+pico_enable_stdio_uart(pico-cpp 0)
 
 # Link libraries
 target_link_libraries(pico-cpp PRIVATE 
@@ -54,7 +58,8 @@ target_link_libraries(pico-cpp PRIVATE
     pico_multicore
     hardware_gpio
     Motor
+    Algorithm
 )
 
-# Generate .elf, .bin, .uf2, etc.
+# Generate outputs (.elf, .bin, .uf2, etc)
 pico_add_extra_outputs(pico-cpp)
