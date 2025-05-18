@@ -170,23 +170,19 @@ void update_motor_steps(optic_t* optic, motor_axis_t axis_select) {
 
 void motors_move(optic_t* optics[]){
     set_direction(optics);
-    printf("Stepper 0 = %d\n", optics[0]->moving);
-    printf("Stepper 1 = %d\n", optics[1]->moving);
-    printf("Raster optic pointer[0] = %p\n", (void*)optics[0]);
     while (optics[0]->moving || optics[1]->moving || optics[2]->moving || optics[3]->moving) {
-        printf("MOVING");
         // Set all step pins high for motors that need to move
         for (uint i = 0; i < 4; i++){
             update_motor_steps(optics[i], MOTOR_X);
             update_motor_steps(optics[i], MOTOR_Y);
             update_motor_steps(optics[i], MOTOR_Z);
+            sleep_us(1000); 
+            set_low(optics); // Set pins low after step pulse
+            sleep_us(1000); // Small delay before next iteration
             optics[i]->moving = (optics[i]->motor_X.moving || optics[i]->motor_Y.moving || optics[i]->motor_Z.moving);
         }
 
         
         // Hold step state before resetting
-        sleep_us(3); 
-        set_low(optics); // Set pins low after step pulse
-        sleep_us(3); // Small delay before next iteration
     }
 }

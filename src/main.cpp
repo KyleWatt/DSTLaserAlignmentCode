@@ -57,61 +57,58 @@ int is_valid_number(const char *str) {
     return 1;
 }
 
-void init_gpio() {
-    for (int pin = 0; pin <= 3; ++pin) {
-        gpio_init(pin);
-        gpio_set_dir(pin, GPIO_OUT);
-    }
-}
-
 void process_manual_command(const char *message) {
     char *msg_copy = my_strdup(message);
     char *token = strtok(msg_copy, " ");
 
     if (token != NULL) {
         if (strcmp(token, "move") == 0) {
+            char *optic_select_char = strtok(NULL, " ");
             char *axis = strtok(NULL, " ");
             char *stepsStr = strtok(NULL, " ");
 
-            if (axis && is_valid_number(stepsStr)) {
-                int steps = atoi(stepsStr);
+
+            if (axis && is_valid_number(stepsStr) && is_valid_number(optic_select_char)) {
+                uint steps = atoi(stepsStr);
+                uint optic_select_int = atoi(optic_select_char);
                 if (strcmp(axis, "x") == 0) {
                     printf("MOVING X\n");
-                    for (int i = 0; i < steps; i++) {
-                        gpio_put(0, 1);
-                        sleep_us(1000);
-                        gpio_put(0, 0);
-                        sleep_us(1000);
-                    }
+                    optics[optic_select_int]->motor_X.target_steps = steps;
+                    motors_move(optics);
                 } else if (strcmp(axis, "y") == 0) {
                     printf("MOVING Y\n");
-                    for (int i = 0; i < steps; i++) {
-                        gpio_put(2, 1);
-                        sleep_us(1000);
-                        gpio_put(2, 0);
-                        sleep_us(1000);
+                    optics[optic_select_int]->motor_X.target_steps = steps;
+                    motors_move(optics);
+                } else if (strcmp(axis, "z") == 0) {
+                    printf("MOVING Z\n");
+                    optics[optic_select_int]->motor_Z.target_steps = steps;
+                    motors_move(optics);
                     }
                 } else {
-                    printf("Error: Unknown axis '%s'. Use 'x' or 'y'.\n", axis);
+                    printf("Error: Unknown axis '%s'. Use 'x' or 'y' or 'z' .\n", axis);
                 }
             } else {
-                printf("Error: Invalid move format. Usage: move x/y <steps>\n");
+                printf("Error: Invalid move format. Usage: move 0/1/2/3 x/y/z <steps>\n");
             }
         } else if (strcmp(token, "set") == 0) {
+            char *optic_select_char = strtok(NULL, " ");
             char *axis = strtok(NULL, " ");
             char *dir = strtok(NULL, " ");
 
-            if (axis && is_valid_number(dir)) {
+            if (axis && is_valid_number(dir) && is_valid_number(optic_select_char)) {
                 uint direction = atoi(dir);
+                uint optic_select_int = atoi(optic_select_char);
                 if (strcmp(axis, "x") == 0) {
-                    gpio_put(1, direction);
+                    optics[optic_select_int]->motor_X.direction = direction;
                 } else if (strcmp(axis, "y") == 0) {
-                    gpio_put(3, direction);
-                } else {
+                    optics[optic_select_int]->motor_Y.direction = direction;
+                } else if (strcmp(axis, "z") == 0){
+                    optics[optic_select_int]->motor_Z.direction = direction;
+                }else {
                     printf("Error: Unknown axis '%s'. Use 'x' or 'y'.\n", axis);
                 }
             } else {
-                printf("Error: Invalid set format. Usage: set x/y <0/1>\n");
+                printf("Error: Invalid set format. Usage: set 0/1/2/3 x/y <0/1>\n");
             }
         } else if (strcmp(token, "exit") == 0) {
             printf("Exiting manual mode.\n");
@@ -124,7 +121,6 @@ void process_manual_command(const char *message) {
         } else {
             printf("Unknown manual command: %s\n", token);
         }
-    }
 
     free(msg_copy);
 }
@@ -207,7 +203,7 @@ void handle_serial_input(void (*command_handler)(const char *)) {
 
 int main() {
     stdio_init_all();
-    init_gpio();
+    optics_init();
 
     printf("System ready. Type 'help' for available commands.\n");
 

@@ -17,9 +17,6 @@ void move_x(optic_t* optics[], uint width){
         optics[i]->moving = true;
         optics[i]->motor_X.moving = true;
     }
-    printf("Raster optic pointer[0] = %p\n", (void*)optics[0]);
-    printf("Rastery optic 0 = %d\n", optics[0]->moving);
-    printf("Rastery optic 1 = %d\n", optics[1]->moving);
     motors_move(optics);
 }
 
@@ -30,9 +27,6 @@ void move_y(optic_t* optics[], uint height){
         optics[i]->moving = true;
         optics[i]->motor_Y.moving = true;
     }
-    printf("Raster optic pointer[0] = %p\n", (void*)optics[0]);
-    printf("Rasterx optic 0 = %d\n", optics[0]->moving);
-    printf("Rasterx optic 1 = %d\n", optics[1]->moving);
     motors_move(optics);
 }   
 
