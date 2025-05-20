@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include "Power.hpp"
 
-#define UART_ID uart1
+#define UART_ID uart0
 #define BAUD_RATE 115200
-#define UART_TX_PIN 4
-#define UART_RX_PIN 5
+#define UART_TX_PIN 12
+#define UART_RX_PIN 13
 #define POWER_A_INDEX 4
 #define POWER_B_INDEX 5
 #define POWER_C_INDEX 6

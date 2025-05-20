@@ -92,5 +92,11 @@ void motors_move(optic_t** optics);
 
 void set_direction(optic_t optics[]);
 
+void center_optic(optic_t* optic);
+
+void set_max(optic_t* optic, motor_axis_t axis_select );
+
+void set_center(optic_t* optic);
+
 
 #endif // STEPPER_HPP

@@ -172,6 +172,51 @@ void update_motor_steps(optic_t* optic, motor_axis_t axis_select) {
     }
 }
 
+void set_center(optic_t* optic){
+    optic->x_location = 0;
+    optic->y_location = 0;
+    optic->z_location = 0;
+}
+
+void set_max(optic_t* optic, motor_axis_t axis_select ){
+
+}
+
+void center_optic(optic_t* optic){
+    if (optic->x_location > 0){
+        //set direction to go backwards toward the max x location
+        optic->motor_X.direction = 0;
+        //set target steps to number of steps to get to max x location
+        int target_steps = optic->x_location;
+        optic->motor_X.target_steps = target_steps;
+    } else if (optic->x_location < 0){
+        //set direction to go forwards toward the max x location
+        optic->motor_X.direction = 1;
+        //set target steps to number of steps to get to max x location
+        int target_steps = abs(optic->x_location);
+        optic->motor_X.target_steps = target_steps;
+        }
+    if (optic->y_location > 0){
+            optic->motor_Y.direction = 0;
+            int target_steps = optic->y_location;
+            optic->motor_Y.target_steps = target_steps;
+    } else if (optic->y_location < 0){
+        optic->motor_Y.direction = 1;
+        int target_steps = abs(optic->y_location);
+        optic->motor_Y.target_steps = target_steps;
+    }
+    if (optic->z_location > 0){
+            optic->motor_Z.direction = 0;
+            int target_steps = optic->z_location;
+            optic->motor_Z.target_steps = target_steps;
+    } else if (optic->z_location < 0){
+        optic->motor_Z.direction = 1;
+        int target_steps = abs(optic->z_location);
+        optic->motor_Z.target_steps = target_steps;
+        }
+        
+}
+
 
 void motors_move(optic_t* optics[]){
     set_direction(optics);
