@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include "pico/multicore.h"
 
+#define HOLD_TIME 500
+
 void optic_motors_init(optic_t* optic,optic_select_t optic_select){
     // Setup the motor struct
     switch (optic_select)
@@ -138,10 +140,13 @@ void update_motor_steps(optic_t* optic, motor_axis_t axis_select) {
     switch (axis_select)
     {
     case MOTOR_X:
+        //Check if motor has reached target steps
         if (optic->motor_X.cur_steps != optic->motor_X.target_steps) {
+            //If not set step pin to high, initating step sequence
             gpio_put(optic->motor_X.pin_step, 1);
             optic->motor_X.cur_steps++;
         } else {
+            //else update location by adding or subtracting steps taken depending on direction
             optic->motor_X.moving = false;
             optic->x_location += (optic->motor_X.direction == 0) ? -optic->motor_X.cur_steps : optic->motor_X.cur_steps;
         } 
@@ -170,15 +175,20 @@ void update_motor_steps(optic_t* optic, motor_axis_t axis_select) {
 
 void motors_move(optic_t* optics[]){
     set_direction(optics);
+    //For each optic check if any motors are moving
+    for (uint i = 0; i < 4; i++){
+        optics[i]->moving = (optics[i]->motor_X.moving || optics[i]->motor_Y.moving || optics[i]->motor_Z.moving);
+    }
+
     while (optics[0]->moving || optics[1]->moving || optics[2]->moving || optics[3]->moving) {
         // Set all step pins high for motors that need to move
         for (uint i = 0; i < 4; i++){
             update_motor_steps(optics[i], MOTOR_X);
             update_motor_steps(optics[i], MOTOR_Y);
             update_motor_steps(optics[i], MOTOR_Z);
-            sleep_us(1000); 
+            sleep_us(HOLD_TIME); 
             set_low(optics); // Set pins low after step pulse
-            sleep_us(1000); // Small delay before next iteration
+            sleep_us(HOLD_TIME); // Small delay before next iteration
             optics[i]->moving = (optics[i]->motor_X.moving || optics[i]->motor_Y.moving || optics[i]->motor_Z.moving);
         }
 

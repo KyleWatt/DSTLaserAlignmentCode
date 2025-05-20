@@ -5,6 +5,15 @@
 #include "pico/stdlib.h"
 #include "Stepper.hpp" 
 #include "Raster.hpp" 
+#include "Power.hpp"
+
+
+#define UART_ID uart1
+#define BAUD_RATE 115200
+
+#define UART_TX_PIN 4
+#define UART_RX_PIN 5
+#define NUM_READINGS 7
 
 #define MAX_MESSAGE_LENGTH 40
 
@@ -56,6 +65,8 @@ int is_valid_number(const char *str) {
     }
     return 1;
 }
+
+
 
 void process_manual_command(const char *message) {
     char *msg_copy = my_strdup(message);
@@ -171,7 +182,11 @@ void process_main_command(const char *message) {
             printf("  raster [h w i] - Start raster scan with optional height, width, interactions\n");
             printf("  spiral       - Start spiral movement\n");
 
-        } else {
+        } else if (strcmp(token, "power") == 0) {
+            printf("Checking power...\n");
+            readPower();
+        }
+        else {
             printf("Unknown main command: %s\n", token);
         }
     }
@@ -204,6 +219,7 @@ void handle_serial_input(void (*command_handler)(const char *)) {
 int main() {
     stdio_init_all();
     optics_init();
+    initPower();
 
     printf("System ready. Type 'help' for available commands.\n");
 

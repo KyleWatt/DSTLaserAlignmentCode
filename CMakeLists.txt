@@ -31,6 +31,7 @@ target_compile_options(warnings INTERFACE "-Wall" "-Wextra" "-Wno-psabi")
 # Add subdirectories for your libraries (Motor, Algorithm)
 add_subdirectory(src/Motor)
 add_subdirectory(src/Algorithm)
+add_subdirectory(src/Power)
 
 # Add main executable (builds in root-level build/)
 add_executable(pico-cpp 
@@ -42,6 +43,7 @@ target_include_directories(pico-cpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Motor
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Algorithm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Power
 )
 
 # C++ standard
@@ -59,6 +61,7 @@ target_link_libraries(pico-cpp PRIVATE
     hardware_gpio
     Motor
     Algorithm
+    Power
 )
 
 # Generate outputs (.elf, .bin, .uf2, etc)

@@ -59,6 +59,9 @@ typedef struct {
     int x_location;
     int y_location;
     int z_location;
+    int max_x_location;
+    int max_y_location;
+    int max_z_location;
     uint pin_enable;
     bool moving;
 

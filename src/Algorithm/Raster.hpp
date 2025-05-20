@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "Stepper.hpp"
+#include "Power.hpp"
 
 void start_raster(optic_t* optics[], int height, int width, int iterations);
 void move_x(optic_t* optics[], uint width);
