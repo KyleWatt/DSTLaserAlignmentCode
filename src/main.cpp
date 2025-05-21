@@ -91,14 +91,17 @@ void process_manual_command(const char *message) {
                 } else if (strcmp(axis, "x") == 0) {
                     printf("MOVING optic %u X by %u steps\n", optic_select_int, steps);
                     optics[optic_select_int]->motor_X.target_steps = steps;
+                    optics[optic_select_int]->motor_X.moving = true;
                     motors_move(optics);
                 } else if (strcmp(axis, "y") == 0) {
                     printf("MOVING optic %u Y by %u steps\n", optic_select_int, steps);
                     optics[optic_select_int]->motor_Y.target_steps = steps;
+                    optics[optic_select_int]->motor_Y.moving = true;
                     motors_move(optics);
                 } else if (strcmp(axis, "z") == 0) {
                     printf("MOVING optic %u Z by %u steps\n", optic_select_int, steps);
                     optics[optic_select_int]->motor_Z.target_steps = steps;
+                    optics[optic_select_int]->motor_Z.moving = true;
                     motors_move(optics);
                 } else {
                     printf("Error: Unknown axis '%s'. Use 'x' or 'y' or 'z'.\n", axis);
@@ -144,13 +147,12 @@ void process_manual_command(const char *message) {
                 set_center(optics[optic_select_int]);
             }
         } else if (strcmp(token, "centre") == 0) {
-            char *optic_select_char = strtok(NULL, " ");
-            if (optic_select_char && is_valid_number(optic_select_char)){
-                uint optic_select_int = atoi(optic_select_char);
-                center_optic(optics[optic_select_int]);
-            }
-        }
-        else if (strcmp(token, "exit") == 0) {
+            center_optic(optics);
+        } else if (strcmp(token, "location") == 0) {
+            printf("X = %d Y = %d Z = %d \n",optics[0]->x_location,optics[0]->y_location, optics[0]->z_location);
+        } else if (strcmp(token, "direction") == 0) {
+            printf("Xdir = %d Ydir = %d Zdir = %d \n",optics[0]->motor_X.direction,optics[0]->motor_Y.direction, optics[0]->motor_Z.direction);
+        } else if (strcmp(token, "exit") == 0) {
             printf("Exiting manual mode.\n");
             current_mode = MODE_MAIN;
 
@@ -189,18 +191,21 @@ void process_main_command(const char *message) {
             char *heightStr = strtok(NULL, " ");
             char *widthStr = strtok(NULL, " ");
             char *interatrionsStr = strtok(NULL, " ");
+            char *ydirStr = strtok(NULL, " ");
 
             // If user provides values and they are valid numbers, update them
-            if (heightStr && widthStr && interatrionsStr &&
+            if (heightStr && widthStr && interatrionsStr && ydirStr &&
                 is_valid_number(heightStr) &&
                 is_valid_number(widthStr) &&
-                is_valid_number(interatrionsStr)) {
+                is_valid_number(interatrionsStr)&&
+                is_valid_number(ydirStr)) {
 
                 int height = atoi(heightStr);
                 int width = atoi(widthStr);
                 int iterations = atoi(interatrionsStr);
+                uint ydir = atoi(ydirStr);
                 printf("Starting Raster Scan with height=%d, width=%d, iterations=%d\n", height, width, iterations);
-                start_raster(optics, height, width, iterations);
+                start_raster(optics, height, width, iterations, ydir);
             } else if (heightStr || widthStr || interatrionsStr) {
                 printf("Invalid raster parameters. Usage: raster [height width iterations]\n");
                 free(msg_copy);
@@ -225,7 +230,7 @@ void process_main_command(const char *message) {
                 int spacing = atoi(spacingStr);
                 int interactions = atoi(interatrionsStr);
                 printf("Starting Spiral with turns=%d, width=%d, interactions=%d\n", turns, spacing, interactions);
-                start_raster(optics, turns, spacing, interactions);
+                start_spiral(optics, turns, spacing, interactions);
 
             } else if (turnsStr || spacingStr || interatrionsStr) {
                 printf("Invalid raster parameters. Usage: raster [turns spacing iterations]\n");
@@ -236,7 +241,7 @@ void process_main_command(const char *message) {
         } else if (strcmp(token, "help") == 0) {
             printf("Main Mode Commands:\n");
             printf("  manual                 - Enter manual control mode\n");
-            printf("  raster [h w i]         - Start raster scan (optional height, width, interactions)\n");
+            printf("  raster [h w i y]         - Start raster scan (optional height, width, iterations, y direction)\n");
             printf("     e.g., raster 5 5 3\n");
             printf("  spiral [t s i]         - Start spiral scan (optional turns, spacing, iterations)\n");
             printf("     e.g., spiral 3 2 4\n");
@@ -244,7 +249,13 @@ void process_main_command(const char *message) {
             printf("  help                   - Show this help message\n");
         }else if (strcmp(token, "power") == 0) {
             printf("Checking power...\n");
-            readPower();
+            power_t current_power = get_latest_power();
+
+            printf("Current Power: A=%.2f, B=%.2f, C=%.2f, D=%.2f\n",
+                current_power.power_A,
+                current_power.power_B,
+                current_power.power_C,
+                current_power.power_D);
         }
         else {
             printf("Unknown main command: %s\n", token);

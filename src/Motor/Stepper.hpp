@@ -62,6 +62,7 @@ typedef struct {
     int max_x_location;
     int max_y_location;
     int max_z_location;
+    float max_power;
     uint pin_enable;
     bool moving;
 
@@ -92,11 +93,14 @@ void motors_move(optic_t** optics);
 
 void set_direction(optic_t optics[]);
 
-void center_optic(optic_t* optic);
+void center_optic(optic_t* optics[]);
 
 void set_max(optic_t* optic, motor_axis_t axis_select );
 
 void set_center(optic_t* optic);
 
+void set_max_pos(optic_t* optic, float power);
+
+void go_to_max_pos(optic_t* optics[]);
 
 #endif // STEPPER_HPP
