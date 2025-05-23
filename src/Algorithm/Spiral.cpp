@@ -10,37 +10,37 @@
 
 
 void calculate_spiral_step(optic_t* optic, int spiral_spacing, float angle, float t) {
-        int x = (int)(spiral_spacing * t * sinf(angle));
-        int y = (int)(spiral_spacing * t * cosf(angle));
+    // Calculate target position with floating-point precision
+    float target_x = spiral_spacing * t * sinf(angle);
+    float target_y = spiral_spacing * t * cosf(angle);
 
-        int dx = x - optic->x_location;
-        int dy = y - optic->y_location;
 
-        //Get direction
-        uint x_dir = (dx >= 0) ? 1 : 0;
-        uint y_dir = (dy >= 0) ? 1 : 0;
+    // Calculate deltas from current position
+    float dx = target_x - optic->x_pos;
+    float dy = target_y - optic->y_pos;
 
-        //Remove any negative steps
-        uint x_steps = abs(dx);
-        uint y_steps = abs(dy);
+    // Round to integer steps to avoid truncation errors
+    int steps_x = (int)roundf(dx);
+    int steps_y = (int)roundf(dy);
 
-        // Control motors: set direction then move
-        optic->motor_X.cur_steps = 0;
-        optic->motor_X.target_steps = x_steps;
-        optic->motor_X.direction = x_dir;
 
-        optic->motor_Y.cur_steps = 0;
-        optic->motor_Y.target_steps = y_steps;
-        optic->motor_Y.direction = y_dir;
-        
+    // Update floating-point position to preserve accurac
+    optic->x_pos += steps_x;  // <-- ADD THIS
+    optic->y_pos += steps_y;  
+
+    // Set motor steps and directions
+    optic->motor_X.direction = (steps_x >= 0) ? 1 : 0;
+    optic->motor_Y.direction = (steps_y >= 0) ? 1 : 0;
+    optic->motor_X.moving = true;
+    optic->motor_Y.moving = true;
+    optic->motor_X.target_steps = abs(steps_x);
+    optic->motor_Y.target_steps = abs(steps_y);
 }
 
 void start_spiral(optic_t* optics[], int turns, int spiral_spacing, int iterations){
-    float t;
-    float angle;
     for (int i = 0; i < iterations; i++ ){
-        t = (float)i / (iterations - 1);
-        angle = t * 2 * M_PI * turns;
+        float t = (float)i / (iterations - 1);
+        float angle = t * 2 * M_PI * turns;
         //For each optic in optics
         for (int x = 0; x < 4; x++){
             calculate_spiral_step(optics[x], spiral_spacing, angle, t);

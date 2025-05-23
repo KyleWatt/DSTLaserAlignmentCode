@@ -17,7 +17,7 @@ void move_x(optic_t* optics[], uint width, bool direction){
 
 
 void move_y(optic_t* optics[], uint height, uint ydir){
-     for (uint i = 0; i < 4; i++){
+     for (uint i = 1; i < 4; i++){
         optics[i]->motor_Y.target_steps = height;
         optics[i]->motor_Y.direction = ydir;
         optics[i]->motor_Y.cur_steps = 0;

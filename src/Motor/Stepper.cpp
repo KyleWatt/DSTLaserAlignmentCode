@@ -278,9 +278,9 @@ void motors_move(optic_t* optics[]) {
         //After Step read power and compare to max power in each optic
         power_t current_power = get_latest_power();
 
-        printf("X= %d Y=%d power = %f \n",optics[0]->x_location, optics[0]->y_location, current_power.power_B);
+        printf("X= %d Y=%d power = %f \n",optics[0]->x_location, optics[0]->y_location, current_power.power_A);
 
-        set_max_pos(optics[0], current_power.power_B);
+        set_max_pos(optics[0], current_power.power_A);
         set_max_pos(optics[1], current_power.power_B);
         set_max_pos(optics[2], current_power.power_C);
         set_max_pos(optics[3], current_power.power_D);
