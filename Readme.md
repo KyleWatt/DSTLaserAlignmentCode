@@ -2,12 +2,15 @@
 
 Automated 3-axis alignment platform for Free Space Optical Communication systems using stepper motors and intelligent search algorithms.
 
+![PCB Image](images/PCB.jpg)
+*Custom PCB with RP2350B microcontroller and 12 A4988 motor drivers*
+
 ## Features
 
 - Sub-micron precision alignment (0.666μm steps)
 - Dual search algorithms (Raster & Spiral scanning)
 - Custom PCB controlling 12 stepper motors
-- Real-time power optimisation
+- Real-time power optimization
 - 3D-printed mechanical components
 
 ## Hardware
@@ -17,20 +20,19 @@ Automated 3-axis alignment platform for Free Space Optical Communication systems
 - **Power:** 12V input, 3.3V regulation
 - **Materials:** PLA 3D-printed parts
 
-
 ## Quick Start
 
 1. Flash firmware to RP2350B
-2. Assemble the mechanical system from the STL files
+2. Assemble mechanical system from STL files
 3. Connect via USB terminal (PuTTY/Tera Term)
-4. Use the 'help' command for a detailed explanation of functions/commands
-5. Run alignment algorithms: `raster`, `spiral', 'SPGD', or align with manual adjustments through manual mode or enter a control loop for continuous optimisation in automatic mode
+4. Run alignment algorithms: `raster` or `spiral`
 
+## Commands
 
 ### Manual Control
 ```
 manual          # Enter manual control mode
-centre          # Return to centre position
+centre          # Return to center position
 move x y z      # Move to specific coordinates
 ```
 
@@ -38,7 +40,6 @@ move x y z      # Move to specific coordinates
 ```
 raster <width> <height_shift> <iterations>
 spiral <turns> <spacing> <points>
-SPGD <iterations> <offset_range> <learning_rate> <threshold>
 ```
 
 ## Repository Structure
