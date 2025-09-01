@@ -47,7 +47,7 @@ SPGD <iterations> <offset_range> <learning_rate> <threshold>
 
 ```
 ├── PCB/           # Schematics, gerbers, BOM
-├── code/          # Firmware source
+├── src/          # Firmware source
 ├── mechanical/    # 3D model files
 └── docs/          # Detailed documentation
 ```
