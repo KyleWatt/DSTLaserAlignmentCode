@@ -17,7 +17,7 @@ Automated 3-axis alignment platform for Free Space Optical Communication systems
 - **Power:** 12V input, 3.3V regulation
 - **Materials:** PLA 3D-printed parts
 
-![PCB Image](images/pcb_photo.jpg)
+![PCB Image](images/PCB.jpg)
 *Custom PCB with RP2350B microcontroller and 12 A4988 motor drivers*
 
 ## Quick Start
