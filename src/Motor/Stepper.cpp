@@ -281,9 +281,13 @@ void motors_move(optic_t* optics[]) {
         printf("X= %d Y=%d power = %f \n",optics[0]->x_location, optics[0]->y_location, current_power.power_A);
 
         set_max_pos(optics[0], current_power.power_A);
+        optics[0]->cur_power = current_power.power_A;
         set_max_pos(optics[1], current_power.power_B);
+        optics[1]->cur_power = current_power.power_B;
         set_max_pos(optics[2], current_power.power_C);
+        optics[2]->cur_power = current_power.power_C;
         set_max_pos(optics[3], current_power.power_D);
+        optics[3]->cur_power = current_power.power_D;
         any_moving = false;
         for (uint i = 0; i < 4; i++) {
             optics[i]->moving = (optics[i]->motor_X.moving || optics[i]->motor_Y.moving || optics[i]->motor_Z.moving);

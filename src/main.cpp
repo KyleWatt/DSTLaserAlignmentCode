@@ -7,6 +7,7 @@
 #include "Raster.hpp" 
 #include "Power.hpp"
 #include "Spiral.hpp"
+#include "SPGD.hpp"
 
 
 #define UART_ID uart1
@@ -26,7 +27,8 @@ static optic_t opticD;
 
 typedef enum {
     MODE_MAIN,
-    MODE_MANUAL
+    MODE_MANUAL,
+    MODE_AUTOMATIC
 } ControlMode;
 
 ControlMode current_mode = MODE_MAIN;
@@ -237,7 +239,19 @@ void process_main_command(const char *message) {
                 free(msg_copy);
                 return;
             }
-
+        else if (strcmp(token, "automatic") == 0) {
+            float threshold = 20.0; // Example threshold value
+            printf("Entering automatic mode...\n");
+            current_mode = MODE_AUTOMATIC; 
+            while(strcmp(token, "break") != 0){
+                for (optic_t* optic : optics){
+                    if (optic->hold_position == false ){
+                        start_spiral_automatic(optics, 3, 2, 4, threshold);
+                        spgd_automatic(optics, 10, 5, 0.1, threshold);
+                    }
+                }
+            }
+        }
         } else if (strcmp(token, "help") == 0) {
             printf("Main Mode Commands:\n");
             printf("  manual                 - Enter manual control mode\n");

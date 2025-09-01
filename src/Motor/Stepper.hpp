@@ -5,31 +5,32 @@
 #define STEPPER_HPP
 
 //Motor Step and DIR PINS
-
-#define STEP1_PIN 0
-#define DIR1_PIN 1
-#define STEP2_PIN 2
-#define DIR2_PIN 3
-#define STEP3_PIN 4 //NEED TO CHANGE THIS BACK -> JUST HAD TO CHANGE PINS TO MATCH DEV BOARD REAL PINS DIFFRENT
-#define DIR3_PIN 5
-#define STEP4_PIN 6
-#define DIR4_PIN 7
-#define STEP5_PIN 8
-#define DIR5_PIN 9
-#define STEP6_PIN 10
-#define DIR6_PIN 11
-#define STEP7_PIN 12
-#define DIR7_PIN 13
-#define STEP8_PIN 14
-#define DIR8_PIN 15
-#define STEP9_PIN 16
-#define DIR9_PIN 17
-#define STEP10_PIN 18
-#define DIR10_PIN 19
-#define STEP11_PIN 20
-#define DIR11_PIN 21
-#define STEP12_PIN 22
-#define DIR12_PIN 23
+//UART PINS take  GPIO 0 and 1
+//GPIO 0 is TX and GPIO 1 is RX
+#define STEP1_PIN 2
+#define DIR1_PIN 3
+#define STEP2_PIN 4
+#define DIR2_PIN 5
+#define STEP3_PIN 6 //NEED TO CHANGE THIS BACK -> JUST HAD TO CHANGE PINS TO MATCH DEV BOARD REAL PINS DIFFRENT
+#define DIR3_PIN 7
+#define STEP4_PIN 8
+#define DIR4_PIN 9
+#define STEP5_PIN 10
+#define DIR5_PIN 11
+#define STEP6_PIN 12
+#define DIR6_PIN 13
+#define STEP7_PIN 14
+#define DIR7_PIN 15
+#define STEP8_PIN 16
+#define DIR8_PIN 17
+#define STEP9_PIN 18
+#define DIR9_PIN 19
+#define STEP10_PIN 20
+#define DIR10_PIN 21
+#define STEP11_PIN 22
+#define DIR11_PIN 23
+#define STEP12_PIN 24
+#define DIR12_PIN 25
 
 // Enable Pin
 #define ENABLE_N 38
@@ -65,8 +66,10 @@ typedef struct {
     int max_y_location;
     int max_z_location;
     float max_power;
+    float cur_power;
     uint pin_enable;
     bool moving;
+    bool hold_position;
 
 } optic_t;
 
