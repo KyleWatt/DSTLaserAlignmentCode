@@ -64,8 +64,8 @@ void spgd(optic_t* optics[], int iterations, int offset_range, float learning_ra
     }
 }
 
-{
-    for (int i = 0; i < iterations; i++) {void spgd_automatic(optic_t* optics[], int iterations, int offset_range, float learning_rate, float threshold) 
+void spgd_automatic(optic_t* optics[], int iterations, int offset_range, float learning_rate, float threshold) {
+    for (int i = 0; i < iterations; i++) {
         random_offset(optics, offset_range);
         
         // Update positions based on gradient approximation

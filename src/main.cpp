@@ -25,6 +25,15 @@ static optic_t opticB;
 static optic_t opticC;
 static optic_t opticD;
 
+
+static int auto_spiral_turns = 5, auto_spiral_spacing = 5, auto_spiral_iterations = 10;
+static int auto_spgd_steps = 10, auto_spgd_window = 5;
+static float auto_spgd_lr = 0.2;
+
+static int num_held_optics = 2; // Default: hold 2 optics
+static float previous_peaks[4] = {0,0,0,0};
+static float new_peaks[4] = {0,0,0,0};
+
 typedef enum {
     MODE_MAIN,
     MODE_MANUAL,
@@ -239,28 +248,42 @@ void process_main_command(const char *message) {
                 free(msg_copy);
                 return;
             }
+        else if (strcmp(token, "hold") == 0) {
+            char *stroptic = strtok(NULL, " ");
+            int optic = atoi(stroptic);
+            optics[optic]->hold_position = true;
+            printf("Setting optic %d to hold position\n", optic);
+
+        }
         else if (strcmp(token, "automatic") == 0) {
             float threshold = 20.0; // Example threshold value
             printf("Entering automatic mode...\n");
             current_mode = MODE_AUTOMATIC; 
-            while(strcmp(token, "break") != 0){
-                for (optic_t* optic : optics){
-                    if (optic->hold_position == false ){
-                        start_spiral_automatic(optics, 3, 2, 4, threshold);
-                        spgd_automatic(optics, 10, 5, 0.1, threshold);
-                    }
-                }
-            }
+            
+        }
+        else if (strcmp(token, "exit") == 0) {
+            printf("Main mode.\n");
+            current_mode = MODE_MAIN;
+
         }
         } else if (strcmp(token, "help") == 0) {
             printf("Main Mode Commands:\n");
-            printf("  manual                 - Enter manual control mode\n");
-            printf("  raster [h w i y]         - Start raster scan (optional height, width, iterations, y direction)\n");
-            printf("     e.g., raster 5 5 3\n");
-            printf("  spiral [t s i]         - Start spiral scan (optional turns, spacing, iterations)\n");
+            printf("  manual                        - Enter manual control mode\n");
+            printf("  raster [h w i y]              - Start raster scan (height, width, iterations, y direction)\n");
+            printf("     e.g., raster 5 5 3 1\n");
+            printf("  spiral [t s i]                - Start spiral scan (turns, spacing, iterations)\n");
             printf("     e.g., spiral 3 2 4\n");
-            printf("  power                  - Read current power levels\n");
-            printf("  help                   - Show this help message\n");
+            printf("  power                         - Read current power levels\n");
+            printf("  hold <optic 0-3>              - Set an optic to hold position (static)\n");
+            printf("  setheld <number 0-4>          - Set number of optics to hold (highest power optics will be held)\n");
+            printf("  automatic                     - Enter automatic search mode\n");
+            printf("     - In automatic mode, the system continuously searches for higher power on non-held optics.\n");
+            printf("     - Held optics are those with the highest power, as set by 'setheld'.\n");
+            printf("     - Search parameters adapt over time for global and local optimization.\n");
+            printf("     - After each search cycle, held/searching optics are updated based on power values.\n");
+            printf("     - You can exit automatic mode at any time by typing 'exit'.\n");
+            printf("  exit                          - Return to main command mode\n");
+            printf("  help                          - Show this help message\n");
         }else if (strcmp(token, "power") == 0) {
             printf("Checking power...\n");
             power_t current_power = get_latest_power();
@@ -271,7 +294,20 @@ void process_main_command(const char *message) {
                 current_power.power_C,
                 current_power.power_D);
         }
-        else {
+        else if (strcmp(token, "setheld") == 0) {
+            char *numStr = strtok(NULL, " ");
+            if (numStr && is_valid_number(numStr)) {
+                int num = atoi(numStr);
+                if (num >= 0 && num <= 4) {
+                    num_held_optics = num;
+                    printf("Number of held optics set to %d\n", num_held_optics);
+                } else {
+                    printf("Error: Number must be between 0 and 4.\n");
+                }
+            } else {
+                printf("Usage: setheld <number 0-4>\n");
+            }
+        } else {
             printf("Unknown main command: %s\n", token);
         }
     }
@@ -279,6 +315,48 @@ void process_main_command(const char *message) {
     free(msg_copy);
 }
 
+void update_held_optics(optic_t* optics[], int num_held) {
+    int indices[4] = {0,1,2,3};
+    // Sort indices by cur_power descending
+    for (int i = 0; i < 3; ++i)
+        for (int j = i+1; j < 4; ++j)
+            if (optics[indices[i]]->cur_power < optics[indices[j]]->cur_power) {
+                int tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+            }
+    // Set hold_position for top num_held optics
+    for (int i = 0; i < 4; ++i)
+        optics[i]->hold_position = false;
+    for (int i = 0; i < num_held; ++i)
+        optics[indices[i]]->hold_position = true;
+}
+
+void automatic_search_step(optic_t* optics[], float threshold) {
+    int all_above_threshold = 1;
+    for (int i = 0; i < 4; ++i) {
+        optic_t* optic = optics[i];
+        previous_peaks[i] = new_peaks[i];
+        new_peaks[i] = optic->max_power;
+        if (!optic->hold_position && optic->cur_power < threshold) {
+            all_above_threshold = 0;
+            printf("Optimizing optic %d (power %.2f < %.2f)\n", i, optic->cur_power, threshold);
+            start_spiral_automatic(&optic, auto_spiral_turns, auto_spiral_spacing, auto_spiral_iterations, threshold);
+            spgd_automatic(&optic, auto_spgd_steps, auto_spgd_window, auto_spgd_lr, threshold);
+            printf("Optic %d new power: %.2f\n", i, optic->cur_power);
+        }
+    }
+    // Adapt parameters for finer search
+    auto_spiral_turns = auto_spiral_turns > 1 ? auto_spiral_turns - 1 : 1;
+    auto_spiral_spacing = auto_spiral_spacing > 1 ? auto_spiral_spacing - 1 : 1;
+    auto_spgd_window = auto_spgd_window > 1 ? auto_spgd_window - 1 : 1;
+    auto_spgd_lr *= 0.8;
+
+    // Switch held/searching optics based on power
+    update_held_optics(optics, num_held_optics);
+
+    if (all_above_threshold) {
+        printf("All active optics above threshold. Waiting for change or 'exit' command.\n");
+    }
+}
 
 void handle_serial_input(void (*command_handler)(const char *)) {
     static char message[MAX_MESSAGE_LENGTH];
@@ -308,11 +386,17 @@ int main() {
 
     printf("System ready. Type 'help' for available commands.\n");
 
+    float auto_threshold = 20.0; // Default threshold
+
     while (true) {
         if (current_mode == MODE_MAIN) {
             handle_serial_input(process_main_command);
         } else if (current_mode == MODE_MANUAL) {
             handle_serial_input(process_manual_command);
+        } else if (current_mode == MODE_AUTOMATIC) {
+            handle_serial_input(process_main_command);
+            automatic_search_step(optics, auto_threshold);
+            sleep_ms(500); 
         }
     }
 
