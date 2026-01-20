@@ -51,21 +51,3 @@ void start_spiral(optic_t* optics[], int turns, int spiral_spacing, int iteratio
     go_to_max_pos(optics);
     printf("Optic A moved to max power location X:%d Y:%d with a power of: %f", optics[0]->x_location,optics[0]->y_location,optics[0]->max_power);
 }
-
-void start_spiral_automatic(optic_t* optics[], int turns, int spiral_spacing, int iterations, float threshold){
-    for (int i = 0; i < iterations; i++ ){
-        float t = (float)i / (iterations - 1);
-        float angle = t * 2 * M_PI * turns;
-        //For each optic in optics
-        for (int x = 0; x < 4; x++){
-            if (optics[x]->hold_position == false && optics[x]->cur_power < threshold){
-                calculate_spiral_step(optics[x], spiral_spacing, angle, t);
-            }
-        }
-        motors_move(optics);
-
-
-    }
-    go_to_max_pos(optics);
-    printf("Optic A moved to max power location X:%d Y:%d with a power of: %f", optics[0]->x_location,optics[0]->y_location,optics[0]->max_power);
-}

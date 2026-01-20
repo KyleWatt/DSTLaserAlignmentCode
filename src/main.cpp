@@ -26,19 +26,14 @@ static optic_t opticC;
 static optic_t opticD;
 
 
-static int auto_spiral_turns = 5, auto_spiral_spacing = 5, auto_spiral_iterations = 10;
-static int auto_spgd_steps = 10, auto_spgd_window = 5;
-static float auto_spgd_lr = 0.2;
-
 static int num_held_optics = 2; // Default: hold 2 optics
-static float previous_peaks[4] = {0,0,0,0};
-static float new_peaks[4] = {0,0,0,0};
 
 typedef enum {
     MODE_MAIN,
     MODE_MANUAL,
     MODE_AUTOMATIC
 } ControlMode;
+
 
 ControlMode current_mode = MODE_MAIN;
 
@@ -315,48 +310,7 @@ void process_main_command(const char *message) {
     free(msg_copy);
 }
 
-void update_held_optics(optic_t* optics[], int num_held) {
-    int indices[4] = {0,1,2,3};
-    // Sort indices by cur_power descending
-    for (int i = 0; i < 3; ++i)
-        for (int j = i+1; j < 4; ++j)
-            if (optics[indices[i]]->cur_power < optics[indices[j]]->cur_power) {
-                int tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
-            }
-    // Set hold_position for top num_held optics
-    for (int i = 0; i < 4; ++i)
-        optics[i]->hold_position = false;
-    for (int i = 0; i < num_held; ++i)
-        optics[indices[i]]->hold_position = true;
-}
 
-void automatic_search_step(optic_t* optics[], float threshold) {
-    int all_above_threshold = 1;
-    for (int i = 0; i < 4; ++i) {
-        optic_t* optic = optics[i];
-        previous_peaks[i] = new_peaks[i];
-        new_peaks[i] = optic->max_power;
-        if (!optic->hold_position && optic->cur_power < threshold) {
-            all_above_threshold = 0;
-            printf("Optimizing optic %d (power %.2f < %.2f)\n", i, optic->cur_power, threshold);
-            start_spiral_automatic(&optic, auto_spiral_turns, auto_spiral_spacing, auto_spiral_iterations, threshold);
-            spgd_automatic(&optic, auto_spgd_steps, auto_spgd_window, auto_spgd_lr, threshold);
-            printf("Optic %d new power: %.2f\n", i, optic->cur_power);
-        }
-    }
-    // Adapt parameters for finer search
-    auto_spiral_turns = auto_spiral_turns > 1 ? auto_spiral_turns - 1 : 1;
-    auto_spiral_spacing = auto_spiral_spacing > 1 ? auto_spiral_spacing - 1 : 1;
-    auto_spgd_window = auto_spgd_window > 1 ? auto_spgd_window - 1 : 1;
-    auto_spgd_lr *= 0.8;
-
-    // Switch held/searching optics based on power
-    update_held_optics(optics, num_held_optics);
-
-    if (all_above_threshold) {
-        printf("All active optics above threshold. Waiting for change or 'exit' command.\n");
-    }
-}
 
 void handle_serial_input(void (*command_handler)(const char *)) {
     static char message[MAX_MESSAGE_LENGTH];
@@ -387,6 +341,7 @@ int main() {
     printf("System ready. Type 'help' for available commands.\n");
 
     float auto_threshold = 20.0; // Default threshold
+    int auto_num_held = 2;
 
     while (true) {
         if (current_mode == MODE_MAIN) {
@@ -395,7 +350,7 @@ int main() {
             handle_serial_input(process_manual_command);
         } else if (current_mode == MODE_AUTOMATIC) {
             handle_serial_input(process_main_command);
-            automatic_search_step(optics, auto_threshold);
+            automatic_search_step(optics,auto_num_held, auto_threshold);
             sleep_ms(500); 
         }
     }

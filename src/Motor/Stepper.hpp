@@ -40,6 +40,13 @@ typedef enum {
     STOPPED
 } motor_state_t;
 
+typedef enum {
+    AGRESSIVE,
+    PASSIVE,
+    MAINTAIN,
+    START
+} search_state_t;
+
 typedef struct {
     // Pins
     uint pin_dir;
@@ -57,6 +64,7 @@ typedef struct {
     motor_t motor_X;
     motor_t motor_Y;
     motor_t motor_Z;
+    search_state_t search;
     int x_location;
     int y_location;
     int z_location;
@@ -67,6 +75,9 @@ typedef struct {
     int max_z_location;
     float max_power;
     float cur_power;
+    float cost_plust;
+    float cost_minus;
+    float grad_approx;
     uint pin_enable;
     bool moving;
     bool hold_position;
