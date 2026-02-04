@@ -51,8 +51,8 @@ void spgd(optic_t* optics[], int iterations, int offset_range, float learning_ra
         
         // Update positions based on gradient approximation
         for (uint j = 0; j < 4; j++) {
-            int target_x =  optics[j]->x_location - learning_rate * grad_approx[j]*dx;
-            int target_y =  optics[j]->y_location - learning_rate * grad_approx[j]*dy;
+            int target_x =   (int)roundf(optics[j]->x_location - learning_rate * grad_approx[j]*dx);
+            int target_y =   (int)roundf(optics[j]->y_location - learning_rate * grad_approx[j]*dy);
             optics[j]->motor_X.target_steps = abs(target_x - optics[j]->x_location);
             optics[j]->motor_Y.target_steps = abs(target_y - optics[j]->y_location);
             optics[j]->motor_X.direction = (target_x > optics[j]->x_location) ? 1 : 0;
@@ -65,12 +65,12 @@ void spgd(optic_t* optics[], int iterations, int offset_range, float learning_ra
 }
 
 void spgd_automatic(optic_t* optic, float learning_rate) {
-    int target_x =  optic->x_location - learning_rate * optic->grad_approx*dx;
-    int target_y =  optic->y_location - learning_rate * optic->grad_approx*dy;
+    int target_x = (int)roundf(optic->x_location - learning_rate * optic->grad_approx*optic->dx);
+    int target_y = (int)roundf(optic->y_location - learning_rate * optic->grad_approx*optic->dy);
     optic->motor_X.target_steps = abs(target_x - optic->x_location);
     optic->motor_Y.target_steps = abs(target_y - optic->y_location);
-    optic->motor_X.direction = (target_x > optics[j]->x_location) ? 1 : 0;
-    optic->motor_Y.direction = (target_y > optics[j]->y_location) ? 1 : 0;
+    optic->motor_X.direction = (target_x > optic->x_location) ? 1 : 0;
+    optic->motor_Y.direction = (target_y > optic->y_location) ? 1 : 0;
     optic->motor_X.moving = true;
     optic->motor_Y.moving = true;
     
@@ -81,8 +81,8 @@ void random_offset_peturb(optic_t* optic, int offset_range){
     optic->dy = rand() % (2 * offset_range + 1) - offset_range;
     optic->motor_X.direction = 1;
     optic->motor_Y.direction = 1;
-    optic->motor_X.target_steps = abs(dx);
-    optic->motor_Y.target_steps = abs(dy);
+    optic->motor_X.target_steps = abs(optic->dx);
+    optic->motor_Y.target_steps = abs(optic->dy);
     optic->motor_X.moving = true;
     optic->motor_Y.moving = true;
 }

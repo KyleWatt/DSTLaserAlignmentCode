@@ -8,6 +8,7 @@
 #include "Power.hpp"
 #include "Spiral.hpp"
 #include "SPGD.hpp"
+#include "Automation.hpp"
 
 
 #define UART_ID uart1
@@ -27,6 +28,9 @@ static optic_t opticD;
 
 
 static int num_held_optics = 2; // Default: hold 2 optics
+static float auto_threshold = 20.0; // Default threshold
+static int auto_iterations = 10;
+
 
 typedef enum {
     MODE_MAIN,
@@ -288,8 +292,24 @@ void process_main_command(const char *message) {
                 current_power.power_B,
                 current_power.power_C,
                 current_power.power_D);
+        } else {
+            printf("Unknown main command: %s\n", token);
         }
-        else if (strcmp(token, "setheld") == 0) {
+    }
+
+    free(msg_copy);
+}
+
+void process_auto_command(const char *message) {
+    char *msg_copy = my_strdup(message);
+    char *token = strtok(msg_copy, " ");
+
+    if (token != NULL) {
+        if (strcmp(token, "exit") == 0) {
+            printf("Entering manual mode...\n");
+            current_mode = MODE_MAIN;
+
+        }else if (strcmp(token, "setheld") == 0) {
             char *numStr = strtok(NULL, " ");
             if (numStr && is_valid_number(numStr)) {
                 int num = atoi(numStr);
@@ -302,12 +322,18 @@ void process_main_command(const char *message) {
             } else {
                 printf("Usage: setheld <number 0-4>\n");
             }
-        } else {
-            printf("Unknown main command: %s\n", token);
+        } else if (strcmp(token, "setiterations") == 0) {
+            char *numStr = strtok(NULL, " ");
+            if (numStr && is_valid_number(numStr)) {
+                auto_iterations = atoi(numStr);
+            }
+        } else if (strcmp(token, "setthreshold") == 0) {
+            char *numStr = strtok(NULL, " ");
+            if (numStr && is_valid_number(numStr)) {
+                auto_iterations = atof(numStr);
+            }
         }
     }
-
-    free(msg_copy);
 }
 
 
@@ -340,17 +366,16 @@ int main() {
 
     printf("System ready. Type 'help' for available commands.\n");
 
-    float auto_threshold = 20.0; // Default threshold
-    int auto_num_held = 2;
 
+    auto_parameters_t passive_parameters, agressive_parameters;
     while (true) {
         if (current_mode == MODE_MAIN) {
             handle_serial_input(process_main_command);
         } else if (current_mode == MODE_MANUAL) {
             handle_serial_input(process_manual_command);
         } else if (current_mode == MODE_AUTOMATIC) {
-            handle_serial_input(process_main_command);
-            automatic_search_step(optics,auto_num_held, auto_threshold);
+            handle_serial_input(process_auto_command);
+            auto_search_loop(optics,num_held_optics,auto_threshold,auto_iterations,passive_parameters,agressive_parameters);
             sleep_ms(500); 
         }
     }
